@@ -116,5 +116,22 @@ order by ClientName
 
 ------------------------ generating the counseling session records for each client--------------------------------
 ------------------------------------------------------------------------------------------------------------------
+------- 
+--select CaseNotes.CaseNoteSummary, CaseNotes.CaseNoteTypeID from CaseNotes where CaseNoteSummary LIKE '%Counseling%'
 
-select * from CaseNotes where CaseNoteTypeID LIKE 'counselling case'???--- counselling case
+
+--select CaseNoteID, CaseNoteSummary, CaseNoteTypeID from CaseNotes where CaseNoteTypeID in
+--(select distinct ListValue from ListItem where ListLabel like '%Counsel%' )
+
+--------- The following query returns 45007 rows
+select Client.FirstName + ' ' + Client.LastName AS "Client_Name", Client.EntityId AS "ClientID",CaseNoteSummary, Body from Client
+inner join CaseNotes 
+on CaseNotes.EntityID = Client.EntityID
+where CaseNoteSummary Like '%cousneling%' or CaseNoteSummary LIKE '%Counseling%' or Body LIKE '%counsel%'
+
+--select * from CaseNotes --where Body LIKE '%counsel%'， this query returns 160000+ results, which basically contains all casenotes
+
+
+------------------------------------------------------------------------------------------------------------------
+------------------------ generating the counseling session records for each client--------------------------------
+
