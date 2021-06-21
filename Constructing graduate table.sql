@@ -52,7 +52,8 @@ select * from ListItem
 where ListLabel like '%permanent%';
 ----------------- Response vector generated-----------------------------------------------
 -------- useful Prescreen, Youth, Graduate, Planned Departure, and Treatment Plan
-select FirstName, LastName, Program.ProgramName, OutcomeDomain.DomainName, OutcomeDomain.DomainID, OutcomeScore.OutcomeValue AS "Score_of_ThisDomain", Assessment.CreatedDate as "Assess-Date" from Client
+select ClientID, AVG(1.0 * Score_of_ThisDomain) Scoretot from 
+(select Client.EntityId ClientID, OutcomeDomain.DomainName, OutcomeDomain.DomainID, OutcomeScore.OutcomeValue AS "Score_of_ThisDomain" from Client
 inner join EnrollmentMember
 on Client.EntityID = EnrollmentMember.ClientID
 inner join Enrollment
@@ -68,8 +69,15 @@ on OutcomeDomain.DomainID = AssessOutcomes.DomainID
 inner join OutcomeScore
 on OutcomeScore.DomainID = AssessOutcomes.DomainID and OutcomeScore.ScoreID = AssessOutcomes.ScoreID
 --inner join 
-where Program.ProgramName like '%Treatment%' ---filtering the program name based on this
-order by FirstName, LastName
+where Program.ProgramName like '%STAR Treatment%' 
+) AO
+group by ClientID
+order by Scoretot desc
+
+
+
+---filtering the program name based on this
+--order by FirstName, LastName
 
 --where EntityID = 180419 --and Assessment.AssessmentID = 168792  and OutcomeDomain.DomainName LIKE '%SS Matrix%'-- For this person, this is 
 --assessment ID 168792 is corresponding to the Crossing NLP treatment plan, may broadcast to other programs
@@ -106,12 +114,14 @@ select * from WorkHistory
 
 ---------------- Generated the full work history of each client---------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------
-select C.FirstName + ' '+ C.LastName AS "ClientName", WorkHistory.EmploymentTypeID, WorkHistory.JobTitle, WorkHistory.BeginDate from Client C
+select C.EntityID as "ClientID", count(WorkHistory.BeginDate) As "Work_hist_count" from Client C
 inner join WorkHistory
 on WorkHistory.ClientID = C.EntityID
-order by ClientName
+group by C.EntityID
+--order by "Work_hist_count"
 ------------------------------------------------------------------------------------------------------------------
 ---------------- Generated the full work history of each client---------------------------------------------------
+
 
 
 ------------------------ generating the counseling session records for each client--------------------------------
@@ -123,11 +133,17 @@ order by ClientName
 --select CaseNoteID, CaseNoteSummary, CaseNoteTypeID from CaseNotes where CaseNoteTypeID in
 --(select distinct ListValue from ListItem where ListLabel like '%Counsel%' )
 
---------- The following query returns 45007 rows
-select Client.FirstName + ' ' + Client.LastName AS "Client_Name", Client.EntityId AS "ClientID",CaseNoteSummary, Body from Client
+--------- The following query returns 28617 distinct rows         
+select TEMP.ClientID, count(*) AS "Number_of_counselings_attended" from 
+(select  distinct Client.EntityId AS "ClientID", CaseNoteSummary, CaseNotes.Body, Client.FirstName, Client.MiddleName, Client.LastName, CaseNotes.CreatedDate from Client
 inner join CaseNotes 
 on CaseNotes.EntityID = Client.EntityID
-where CaseNoteSummary Like '%cousneling%' or CaseNoteSummary LIKE '%Counseling%' or Body LIKE '%counsel%'
+where CaseNoteSummary Like '%cousneling%' or CaseNoteSummary LIKE '%Counseling%' ) TEMP --- excluded the body LIKE "%%" because I think sometimes it's due to the template but contains no text
+group by TEMP.ClientID
+order by "Number_of_counselings_attended" desc
+
+--and Client.EntityID = 132142--- Also, I need to parse the casenotes that some of the participants have attended an outside session or not.
+--group by Client.EntityId
 
 --select * from CaseNotes --where Body LIKE '%counsel%'， this query returns 160000+ results, which basically contains all casenotes
 
@@ -135,3 +151,4 @@ where CaseNoteSummary Like '%cousneling%' or CaseNoteSummary LIKE '%Counseling%'
 ------------------------------------------------------------------------------------------------------------------
 ------------------------ generating the counseling session records for each client--------------------------------
 
+select distinct ProgramName from Program 
