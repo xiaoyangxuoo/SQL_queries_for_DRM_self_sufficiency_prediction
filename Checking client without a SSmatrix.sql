@@ -1,5 +1,5 @@
 SELECT DISTINCT C.ENTITYID, c.birthdate, C.FirstName, C.LastName, E.BeginDate,  E.ProgramName, A.OutcomeDate AS LastSSMatrixDate
-, DATEDIFF(DD, E.BEGINDATE, GETDATE()) DaysinProgram--, DATEDIFF(DD, A.OUTCOMEDATE, GETDATE()) DaysSinceLastSSmatrix
+, DATEDIFF(DD, E.BEGINDATE, GETDATE()) DaysinProgram, cma.Casemanager AS CaseManagername--, DATEDIFF(DD, A.OUTCOMEDATE, GETDATE()) DaysSinceLastSSmatrix
 FROM CLIENT C
 INNER JOIN
 (
@@ -25,17 +25,17 @@ ON AO.DomainID = OD.DomainID AND (OD.DomainName LIKE N'%self-sufficient%' OR OD.
 GROUP BY A.enrollmentid
 ) A
 ON E.enrollmentid = A.enrollmentid
---left join
---(
---select u.FirstName + ' ' + u.LastName as Casemanager, cma.EnrollmentID
---from CaseManagerAssignment cma
---INNER JOIN Users U
---ON CMA.UserID = U.EntityID
---AND CMA.DeletedDate > GETDATE() 
---AND GETDATE() BETWEEN CMA.BeginDate AND CMA.EndDate
---and X_AssignmentType = 2
---) cma
---on e.EnrollmentID = cma.EnrollmentID      DATEDIFF(DD, E.BeginDate,
+left join
+(
+select u.FirstName + ' ' + u.LastName as Casemanager, cma.EnrollmentID
+from CaseManagerAssignment cma
+INNER JOIN Users U
+ON CMA.UserID = U.EntityID
+AND CMA.DeletedDate > GETDATE() 
+AND GETDATE() BETWEEN CMA.BeginDate AND CMA.EndDate
+and X_AssignmentType = 2
+) cma
+on e.EnrollmentID = cma.EnrollmentID      --DATEDIFF(DD, E.BeginDate,
 where   A.OUTCOMEDATE	is null
 and  DATEDIFF(DD, E.BEGINDATE, GETDATE()) > 14
 and c.lastname <> 'test'

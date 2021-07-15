@@ -1,4 +1,4 @@
-select DISTINCT 
+select DISTINCT
        C.FirstName + ' ' + C.LastName As "ClientName"
 		,C.EntityID as ClientID
        ,
@@ -18,8 +18,8 @@ select DISTINCT
 	   DATEDIFF(HOUR,C.BirthDate, getdate()) / 8760 AS "Age"	  
 	   ,
 	   CASE 
-	   WHEN EnrollmentMember.EndDate > getdate() then DATEDIFF(MONTH, EnrollmentMember.BeginDate, getdate())
-	   WHEN EnrollmentMember.EndDate <= getdate() then DATEDIFF(MONTH, EnrollmentMember.BeginDate, EnrollmentMember.EndDate) END AS "Months_in_Program"
+	   WHEN Enrollment.EndDate > getdate() then DATEDIFF(MONTH, Enrollment.BeginDate, getdate())
+	   WHEN Enrollment.EndDate <= getdate() then DATEDIFF(MONTH, Enrollment.BeginDate, Enrollment.EndDate) END AS "Months_in_Program"
 	   ,
 	   ISNULL (AO.Scoretot, NULL) AS "AVG_Score" 
 
@@ -96,17 +96,18 @@ on OutcomeDomain.DomainID = AssessOutcomes.DomainID
 inner join OutcomeScore
 on OutcomeScore.DomainID = AssessOutcomes.DomainID and OutcomeScore.ScoreID = AssessOutcomes.ScoreID
 --inner join 
-where Program.ProgramName like '%STAR Treatment%' 
+where Program.ProgramName like '%FARM NLP Treatment%' 
 ) AO
 group by ClientID) 
 AO    --------------TABLE OF Assessment Outcome scores, temporarily using average score over all domains
 on AO.ClientID = C.EntityID
 --inner join 
 where 
-Program.ProgramName like '%STAR Treatment%' 
+Program.ProgramName like '%FARM NLP Treatment%' 
 AND C.LastName <> 'Test' --- excluding the test client
       AND C.EntityID <> 161737 --- excluding the outside third party client
 and C.BirthDate is not null 
 and C.BirthDate < GETDATE() 
---and Enrollment.DeletedDate > GETDATE() -------- filtering out those 
-and DATEDIFF(HOUR,C.BirthDate, getdate()) / 8760 < 120   --and Status = 100 --and  E.CreatedDate > ' 01-01-2019' and C.CreatedDate < getdate()
+--Enrollment.DeletedDate > GETDATE() -------- filtering out those deleted records?
+and DATEDIFF(HOUR,C.BirthDate, getdate()) / 8760 < 120   ---- less than 120 years old
+--and Status = 100 --and  E.CreatedDate > ' 01-01-2019' and C.CreatedDate < getdate()

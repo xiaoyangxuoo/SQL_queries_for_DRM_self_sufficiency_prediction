@@ -1,4 +1,4 @@
-select DISTINCT 
+select DISTINCT
        C.FirstName + ' ' + C.LastName As "ClientName"
 		,C.EntityID as ClientID
        ,
@@ -96,14 +96,14 @@ on OutcomeDomain.DomainID = AssessOutcomes.DomainID
 inner join OutcomeScore
 on OutcomeScore.DomainID = AssessOutcomes.DomainID and OutcomeScore.ScoreID = AssessOutcomes.ScoreID
 --inner join 
-where Program.ProgramName like '%STAR Treatment%' 
+where Program.ProgramName like '%Crossing NLP Treatment%' 
 ) AO
 group by ClientID) 
 AO    --------------TABLE OF Assessment Outcome scores, temporarily using average score over all domains
 on AO.ClientID = C.EntityID
 --inner join 
 where 
-Program.ProgramName like '%STAR Treatment%' 
+Program.ProgramName like '%Crossing NLP Treatment%' 
 AND C.LastName <> 'Test' --- excluding the test client
       AND C.EntityID <> 161737 --- excluding the outside third party client
 and C.BirthDate is not null 
